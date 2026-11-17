@@ -46,6 +46,11 @@ class DigestTest(unittest.TestCase):
         self.assertEqual(got["vendors"], ["Example Controls"])
         self.assertEqual(got["published"], "2026-11-10")
 
+    def test_only_cisa_https_pages_are_used_as_the_link(self):
+        doc = advisory("ICSA-26-316-01", "Example PLC", 9.8, "CVSS:3.1/AV:N/PR:N/UI:N")
+        doc["document"]["references"] = [{"url": "javascript:alert(1)//cisa.gov/news-events/x"}]
+        self.assertEqual(digest.summarize(doc)["link"], "https://www.cisa.gov/news-events/ics-advisories/icsa-26-316-01")
+
     def test_build_writes_escaped_html_valid_rss_and_skips_a_broken_file(self):
         files = {
             "index.txt": b"2026/icsa-26-316-01.json\n2026/icsa-26-316-02.json\n2026/icsa-26-316-03.json\n",

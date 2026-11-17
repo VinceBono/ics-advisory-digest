@@ -18,6 +18,7 @@ from pathlib import Path
 
 BASE = "https://raw.githubusercontent.com/cisagov/CSAF/develop/csaf_files/OT/white/"
 ADVISORY_ID = re.compile(r"ics(m?)a-(\d\d)-(\d{3})-(\d+)", re.I)
+CISA_PAGES = "https://www.cisa.gov/news-events/"  # only link here; anything else in the file is not trusted as a URL
 TIMEOUT = 30
 
 # CVSS v3/v4 metric values in plain words. UI: v3 uses N/R, v4 uses N/P/A.
@@ -68,7 +69,7 @@ def summarize(csaf: dict) -> dict:
             for key in ("cvss_v4", "cvss_v3"):
                 if key in entry and entry[key].get("baseScore", 0) > worst["baseScore"]:
                     worst = entry[key]
-    link = next((r["url"] for r in doc.get("references", []) if "cisa.gov/news-events" in r.get("url", "")), "")
+    link = next((r["url"] for r in doc.get("references", []) if r.get("url", "").startswith(CISA_PAGES)), "")
     return {
         "id": doc["tracking"]["id"],
         "title": doc["title"],
@@ -81,7 +82,7 @@ def summarize(csaf: dict) -> dict:
         "exposure": plain_words(worst["vectorString"]),
         "cves": cves,
         "cwes": [f"{k} {v}".strip() for k, v in cwes.items()],
-        "link": link or f"https://www.cisa.gov/news-events/ics-advisories/{doc['tracking']['id'].lower()}",
+        "link": link or f"{CISA_PAGES}ics-advisories/{doc['tracking']['id'].lower()}",
     }
 
 
